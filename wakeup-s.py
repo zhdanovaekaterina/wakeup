@@ -20,6 +20,7 @@ dl = dl[(~dl['Стадия сделки'].str.contains('[Тт]ест.*')) & (~dl
 dl = dl[(~dl['Название сделки'].str.contains('Заявка на демо-модуль'))]
 dl = dl[(dl['Направление'].str.contains('WakeUp')) | (dl['Направление'].str.contains('Обучение WakeUp'))]
 
+# Выгрузка столбцов, содержащих имя, в списки
 clientName = ld['Имя'].tolist()
 clientSecondName = ld['Отчество'].tolist()
 clientSurname = ld['Фамилия'].tolist()
@@ -37,7 +38,7 @@ typeChange(clientSurname)
 listOfNames = [clientName, clientSecondName, clientSurname]
 clientContact = []
 
-# Объединение значений в строках в одно
+# Объединение значений в строках в одно, без проверки на дубли
 
 def mergeByElements(listOfLists:list, goalList:list, delimiterList:str):
     '''Принимает список списков, которые нужно объединить поэлементно и объединяет их в целевой список с помощью заданного символа объединения.
@@ -45,6 +46,8 @@ def mergeByElements(listOfLists:list, goalList:list, delimiterList:str):
         Не объединяет значения 'nan'.
     '''
     flag = False
+    if goalList != []:
+        return 'Ошибка: в целевом списке содержатся данные'
     lenthInner = len(listOfLists[0]) #длина внутреннего списка
     for i in range(1, len(listOfLists)):
         if len(listOfLists[i]) != lenthInner:
@@ -59,4 +62,11 @@ def mergeByElements(listOfLists:list, goalList:list, delimiterList:str):
         goalList.append(delimiterList.join(temp))
 
 mergeByElements(listOfNames, clientContact, ' ')
+ld['Контакт'] = clientContact #добавление колонки в дата фрейм
 
+# Выгрузка столбцов, содержащих телефон, в списки
+workTel = ld['Рабочий телефон'].tolist()
+mobTel = ld['Мобильный телефон'].tolist()
+otherTel = ld['Другой телефон'].tolist()
+
+# Приведение номера телефона к одному виду
