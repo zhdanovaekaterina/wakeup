@@ -103,7 +103,7 @@ newWorkTelDL = [''.join(filter(str.isdigit, tel)) for tel in workTelDl]
 newMobTelDl = [''.join(filter(str.isdigit, tel)) for tel in mobTelDl]
 newOtherTelDl = [''.join(filter(str.isdigit, tel)) for tel in otherTelDl]
 newOsuTelDl = [''.join(filter(str.isdigit, tel)) for tel in osuTelDl]
-listOfTelephonesDl = [newOtherTelDl, newOsuTelDl, newWorkTelDL, newMobTelDl]
+listOfTelephonesDl = [newOtherTelDl, newWorkTelDL, newMobTelDl, newOsuTelDl]
 
 keyTelLd = []
 keyTelDl = []
@@ -124,28 +124,16 @@ def mergeTelephones(listOfLists:list, goalList:list):
     if flag:
         return 'Ошибка: переданные списки разной длины'
     for k in range(0, lenthInner):
-        n = 0
-        while n <= len(listOfLists):
-            if n != len(listOfLists) and listOfLists[n][k] != '':
-                goalList.append(listOfLists[n][k])
-                n += 1
-            else:
-                goalList.append('-')
+        temp = []
+        for n in range(0, len(listOfLists)):
+            if temp != []:
                 break
+            if listOfLists[n][k] != 'nan':
+                temp.append(listOfLists[n][k])
+        goalList.append(*temp)
 
 mergeTelephones(listOfTelephones, keyTelLd)
 mergeTelephones(listOfTelephonesDl, keyTelDl)
-
-# Проверка длины ключа
-
-def lenthValidation(listToCheck:list):
-    for i in range(0, len(listToCheck)):
-        temp = listToCheck[i]
-        if len(temp) > 13 and temp[0] == 7:
-            listToCheck[i] = temp[12]
-
-lenthValidation(keyTelLd)
-lenthValidation(keyTelDl)
 
 # Загрузка ключевого телефона в дата фреймы
 # НЕТ ПРОВЕРКИ ОДИНАКОВОЙ ДЛИНЫ КЛЮЧЕВОГО СТОЛБЦА И ЦЕЛЕВОГО ДАТА ФРЕЙМА
