@@ -93,7 +93,7 @@ for telItem in listOfRawTelephones:
 for telItem in listOfRawTelephonesDl:
     typeChange(telItem)
 
-# Приведение номеров телефонов к единому формату и запись в общий список (важна запись в порядке перебора списков при записи id по номеру)
+# Приведение номеров телефонов к единому формату и запись в общий список телефонов (важна запись в порядке перебора списков при записи id по номеру)
 newWorkTel = [''.join(filter(str.isdigit, tel)) for tel in workTel]
 newMobTel = [''.join(filter(str.isdigit, tel)) for tel in mobTel]
 newOtherTel = [''.join(filter(str.isdigit, tel)) for tel in otherTel]
@@ -138,7 +138,9 @@ mergeTelephones(listOfTelephonesDl, keyTelDl)
 # Загрузка ключевого телефона в дата фреймы
 # НЕТ ПРОВЕРКИ ОДИНАКОВОЙ ДЛИНЫ КЛЮЧЕВОГО СТОЛБЦА И ЦЕЛЕВОГО ДАТА ФРЕЙМА
 ld['Ключевой телефон'] = keyTelLd
+ld.loc[ld['Ключевой телефон'] == '', 'Ключевой телефон'] = np.NaN
 dl['Ключевой телефон'] = keyTelDl
+dl.loc[dl['Ключевой телефон'] == '', 'Ключевой телефон'] = np.NaN
 ld = ld.drop('Рабочий телефон', 1) #удаление лишних колонок
 ld = ld.drop('Мобильный телефон', 1)
 ld = ld.drop('Другой телефон', 1)
@@ -146,3 +148,6 @@ dl = dl.drop('Контакт: Рабочий телефон', 1)
 dl = dl.drop('Контакт: Мобильный телефон', 1)
 dl = dl.drop('Контакт: Другой телефон', 1)
 dl = dl.drop('Телефон клиента (ОСУ)', 1)
+
+# Соединение строк по ключевому телефону
+ld.groupby(['Ключевой телефон/почта'])['ID'].apply(list)
