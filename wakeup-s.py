@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import re
 
+from pandas.core.frame import DataFrame
+
 # Задание списка полей для импорта
 fieldsToImportLeads = ['ID', 'Статус', 'Название лида', 'Имя', 'Отчество', 'Фамилия', 'Дата создания', 'Рабочий телефон', 'Мобильный телефон', 'Другой телефон', 'Рабочий e-mail', 'Частный e-mail', 'Другой e-mail', 'Сумма', 'UTM Source', 'UTM Medium', 'UTM Campaign', 'Направление', 'UF_CRM_PRODUCT']
 fieldsToImportDeals = ['ID', 'Направление', 'Стадия сделки', 'Название сделки', 'Сумма', 'Контакт', 'Дата создания', 'UTM Source', 'UTM Medium', 'UTM Campaign', 'Курс WakeUp', 'Телефон клиента (ОСУ)', 'Почта клиента (ОСУ)', 'Контакт: Рабочий телефон', 'Контакт: Мобильный телефон', 'Контакт: Другой телефон', 'Контакт: Рабочий e-mail', 'Контакт: Частный e-mail', 'Контакт: Другой e-mail']
@@ -149,5 +151,34 @@ dl = dl.drop('Контакт: Мобильный телефон', 1)
 dl = dl.drop('Контакт: Другой телефон', 1)
 dl = dl.drop('Телефон клиента (ОСУ)', 1)
 
-# Соединение строк по ключевому телефону
-ld.groupby(['Ключевой телефон/почта'])['ID'].apply(list)
+# Соединение строк по ключевому телефону - для каждого столбца отдельно. Результат - новый df
+
+def mergeLines(keyDataFrame, keyColumn:str, listOfColumns:list):
+    '''Принимает исходный дата фрейм, ключевой столбец, по которому будут объединяться данные, и список столбцов, которые необходимо объединить.
+        Возвращает объединенный датафрейм.
+    '''
+    tempLists = []
+    for i in listOfColumns:
+        tempList1 = pd.Series(keyDataFrame.groupby([keyColumn])[i].apply(list))
+        tempLists.append(tempList1)
+    resultDataFrame = pd.DataFrame(tempLists)
+    resultDataFrame = resultDataFrame.transpose()
+    return resultDataFrame
+
+keyColumn1 = ld.columns[len(ld.columns)-1]
+listOfColumns1 = ld.columns
+ldResult = mergeLines(ld, keyColumn1, listOfColumns1)
+ldResult
+
+keyColumn2 = dl.columns[len(dl.columns)-1]
+listOfColumns2 = dl.columns
+ldResult = mergeLines(dl, keyColumn2, listOfColumns2)
+ldResult
+
+# Объединение двух датафреймов по ключу
+
+def mergeDataFrames(dataFrame1, dataFrame2, keyColumn):
+    '''Принимает два дата фрейма и ключевой столбец.
+    Возвращает объединенный дата фрейм.
+    '''
+
