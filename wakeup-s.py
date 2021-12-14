@@ -49,7 +49,7 @@ clientContact = []
 
 # Объединение значений в строках в одно, без проверки на дубли
 
-def mergeByElements(listOfLists:list, goalList:list, delimiterList:str):
+def mergeByElements(listOfLists:list, goalList:list, delimiterList=' '):
     '''Принимает список списков, которые нужно объединить поэлементно и объединяет их в целевой список с помощью заданного символа объединения.
         Проверяет входные списки на одинаковую длину.
         Не объединяет значения 'nan'.
@@ -70,7 +70,7 @@ def mergeByElements(listOfLists:list, goalList:list, delimiterList:str):
                 temp.append(listOfLists[n][k])
         goalList.append(delimiterList.join(temp))
 
-mergeByElements(listOfNames, clientContact, ' ')
+mergeByElements(listOfNames, clientContact)
 ld['Контакт'] = clientContact #добавление колонки в дата фрейм
 ld = ld.drop('Имя', 1) #удаление лишних колонок
 ld = ld.drop('Отчество', 1)
@@ -80,13 +80,20 @@ ld = ld.drop('Фамилия', 1)
 workTel = ld['Рабочий телефон'].tolist()
 mobTel = ld['Мобильный телефон'].tolist()
 otherTel = ld['Другой телефон'].tolist()
-listOfRawTelephones = [otherTel, workTel, mobTel]
+workEmail = ld['Рабочий e-mail'].tolist()
+privateEmail = ld['Частный e-mail'].tolist()
+otherEmail = ld['Другой e-mail'].tolist()
+listOfRawTelephones = [otherTel, workTel, mobTel, otherEmail, workEmail, privateEmail]
 
 workTelDl = dl['Контакт: Рабочий телефон'].tolist()
 mobTelDl = dl['Контакт: Мобильный телефон'].tolist()
 otherTelDl = dl['Контакт: Другой телефон'].tolist()
 osuTelDl = dl['Телефон клиента (ОСУ)'].tolist()
-listOfRawTelephonesDl = [otherTelDl, osuTelDl, workTelDl, mobTelDl]
+workEmailDl = dl['Контакт: Рабочий e-mail'].tolist()
+privateEmailDl = dl['Контакт: Частный e-mail'].tolist()
+otherEmailDl = dl['Контакт: Другой e-mail'].tolist()
+osuEmailDl = dl['Почта клиента (ОСУ)'].tolist()
+listOfRawTelephonesDl = [otherTelDl, osuTelDl, workTelDl, mobTelDl, otherEmailDl, osuEmailDl, workEmailDl, privateEmailDl]
 
 # Явное преобразование всех номеров телефонов в строки
 for telItem in listOfRawTelephones:
@@ -95,17 +102,30 @@ for telItem in listOfRawTelephones:
 for telItem in listOfRawTelephonesDl:
     typeChange(telItem)
 
-# Приведение номеров телефонов к единому формату и запись в общий список телефонов (важна запись в порядке перебора списков при записи id по номеру)
+def deleteNans(rawList:list):
+    for i in range(len(rawList)):
+        if rawList[i] == 'nan':
+            rawList[i] = ''
+    return rawList
+
+# Приведение номеров телефонов к единому формату и запись в общий список телефонов и почт (важна запись в порядке перебора списков при записи id по номеру)
 newWorkTel = [''.join(filter(str.isdigit, tel)) for tel in workTel]
 newMobTel = [''.join(filter(str.isdigit, tel)) for tel in mobTel]
 newOtherTel = [''.join(filter(str.isdigit, tel)) for tel in otherTel]
-listOfTelephones = [newOtherTel, newWorkTel, newMobTel]
+newotherEmail = deleteNans(otherEmail)
+newworkEmail = deleteNans(workEmail)
+newprivateEmail = deleteNans(privateEmail)
+listOfTelephones = [newOtherTel, newWorkTel, newMobTel, newotherEmail, newworkEmail, newprivateEmail]
 
 newWorkTelDL = [''.join(filter(str.isdigit, tel)) for tel in workTelDl]
 newMobTelDl = [''.join(filter(str.isdigit, tel)) for tel in mobTelDl]
 newOtherTelDl = [''.join(filter(str.isdigit, tel)) for tel in otherTelDl]
 newOsuTelDl = [''.join(filter(str.isdigit, tel)) for tel in osuTelDl]
-listOfTelephonesDl = [newOtherTelDl, newWorkTelDL, newMobTelDl, newOsuTelDl]
+newotherEmailDl = deleteNans(otherEmailDl)
+newosuEmailDl = deleteNans(osuEmailDl)
+newworkEmailDl = deleteNans(workEmailDl)
+newprivateEmailDl = deleteNans(privateEmailDl)
+listOfTelephonesDl = [newOtherTelDl, newWorkTelDL, newMobTelDl, newOsuTelDl, newotherEmailDl, newosuEmailDl, newworkEmailDl, newprivateEmailDl]
 
 keyTelLd = []
 keyTelDl = []
@@ -128,9 +148,9 @@ def mergeTelephones(listOfLists:list, goalList:list):
     for k in range(0, lenthInner):
         temp = []
         for n in range(0, len(listOfLists)):
-            if temp != []:
+            if len(temp) == 1:
                 break
-            if listOfLists[n][k] != 'nan':
+            if listOfLists[n][k] != '':
                 temp.append(listOfLists[n][k])
         goalList.append(*temp)
 
@@ -143,13 +163,8 @@ ld['Ключевой телефон'] = keyTelLd
 ld.loc[ld['Ключевой телефон'] == '', 'Ключевой телефон'] = np.NaN
 dl['Ключевой телефон'] = keyTelDl
 dl.loc[dl['Ключевой телефон'] == '', 'Ключевой телефон'] = np.NaN
-ld = ld.drop('Рабочий телефон', 1) #удаление лишних колонок
-ld = ld.drop('Мобильный телефон', 1)
-ld = ld.drop('Другой телефон', 1)
-dl = dl.drop('Контакт: Рабочий телефон', 1)
-dl = dl.drop('Контакт: Мобильный телефон', 1)
-dl = dl.drop('Контакт: Другой телефон', 1)
-dl = dl.drop('Телефон клиента (ОСУ)', 1)
+ld.drop(['Рабочий телефон', 'Мобильный телефон', 'Другой телефон'], 1, inplace=True) #удаление лишних колонок
+dl.drop(['Контакт: Рабочий телефон', 'Контакт: Мобильный телефон', 'Контакт: Другой телефон', 'Телефон клиента (ОСУ)'], 1, inplace=True)
 
 # Соединение строк по ключевому телефону - для каждого столбца отдельно. Результат - новый df
 
@@ -172,13 +187,10 @@ ldResult
 
 keyColumn2 = dl.columns[len(dl.columns)-1]
 listOfColumns2 = dl.columns
-ldResult = mergeLines(dl, keyColumn2, listOfColumns2)
-ldResult
+dlResult = mergeLines(dl, keyColumn2, listOfColumns2)
+dlResult
 
-# Объединение двух датафреймов по ключу
-
-def mergeDataFrames(dataFrame1, dataFrame2, keyColumn):
-    '''Принимает два дата фрейма и ключевой столбец.
-    Возвращает объединенный дата фрейм.
-    '''
+# Объединение двух датафреймов по ключу. Выгрузка в excel
+mergedData = ldResult.merge(dlResult, left_index = True, right_index = True, how='outer')
+mergedData.to_excel('merdedData.xlsx')
 
